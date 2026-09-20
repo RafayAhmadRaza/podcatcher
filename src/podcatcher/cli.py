@@ -48,20 +48,22 @@ if args.remove:
 
 if args.update:
     name = args.update
+    old_podcast = ''
     for pdc in podcast:
         if pdc.title == name: 
             old_podcast = pdc
             break
-    print(old_podcast)
-    new_feed = get_feed(old_podcast.rss_url)
-    print(new_feed)
+    if old_podcast:
+        new_feed = get_feed(old_podcast.rss_url)
     
-    old_episode_guids = {episode.guid for episode in old_podcast.episodes}
+        
+        old_episode_guids = {episode.guid for episode in old_podcast.episodes}
 
-    for episode in new_feed.episodes:
-        if episode.guid not in old_episode_guids:
-            podcast.episodes.append(episode)
-
+        for episode in new_feed.episodes:
+            if episode.guid not in old_episode_guids:
+                old_podcast.episodes.append(episode)
+    else:
+        print(f"Podcast '{name}' not found")
 
 
 if args.list:
