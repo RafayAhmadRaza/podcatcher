@@ -7,7 +7,9 @@ from pathlib import Path
 DB_PATH = Path("podcatcher.db")
 
 def get_connection():
-    return sqlite3.connect(DB_PATH)
+    connection = sqlite3.connect(DB_PATH)
+    connection.execute("PRAGMA foreign_keys = ON")
+    return connection
 
 def create_db(connection):
     # connection = sqlite3.connect(DB_PATH)
@@ -31,7 +33,7 @@ def create_db(connection):
     published TEXT,
     audio_url TEXT,
     guid TEXT NOT NULL,
-    FOREIGN KEY (podcast_id) REFERENCES podcasts(id),
+    FOREIGN KEY (podcast_id) REFERENCES podcasts(id) ON DELETE CASCADE,
     UNIQUE(podcast_id,guid)
     )
     
@@ -67,7 +69,14 @@ def add_podcast(podcast):
     connection.close()
 
 def remove_podcast(podcast):
-    pass
+    connection = get_connection()
+
+    SQL_QUERY = """
+    DELETE FROM podcasts WHERE id = ?
+    """
+    connection.execute(SQL_QUERY,(podcast.id,))
+    connection.commit()
+    connection.close()
 
 def update_podcast(podcast):
     pass
@@ -94,12 +103,11 @@ def get_podcasts():
 
     result = connection.execute(SQL_QUERY)
 
-    podcast = None
     podcasts = {} 
     for row in result:
         if row[0] not in podcasts:
-            if podcast is None:
-                podcasts[row[0]] = Podcast(
+            podcasts[row[0]] = Podcast(
+                id=row[0],
                 title = row[1],
                 description=row[2],
                 website=row[3],

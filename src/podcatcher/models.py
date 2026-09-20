@@ -13,3 +13,4 @@ class Podcast:
     website:str
     rss_url:str
     episodes:[]
+    id:int | None = None

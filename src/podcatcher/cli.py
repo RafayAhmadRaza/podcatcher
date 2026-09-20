@@ -48,9 +48,11 @@ if args.add:
     add_podcast(podcast)
 
 if args.remove:
+    podcast = get_podcasts()
     for pdc in podcast:
         if pdc.title == args.remove:
             podcast.remove(pdc)
+            remove_podcast(pdc)
             break
 
 if args.update:
