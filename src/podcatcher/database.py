@@ -52,7 +52,7 @@ def add_podcast(podcast):
     INSERT INTO podcasts (title, description,website,rss_url)
     VALUES (?,?,?,?)
     """
-    values = (podcast[0].title,podcast[0].description,podcast[0].website,podcast[0].rss_url)
+    values = (podcast.title,podcast.description,podcast.website,podcast.rss_url)
     connection.execute(
         SQL_QUERY,
         values
@@ -61,7 +61,7 @@ def add_podcast(podcast):
     podcast_id = connection.execute("SELECT last_insert_rowid()").fetchone()[0]
     episode_query = """INSERT INTO episodes(podcast_id,title,published,audio_url,guid)
     VALUES (?,?,?,?,?)"""
-    for ep in podcast[0].episodes:
+    for ep in podcast.episodes:
         connection.execute(
             episode_query,
             (podcast_id,ep.title,ep.published,ep.audio_url,ep.guid)

@@ -43,7 +43,7 @@ podcast = []
 if args.add:
     feed_link = args.add
     print(feed_link)
-    podcast.append(get_feed(feed_link))
+    podcast = get_feed(feed_link)
 
     add_podcast(podcast)
 
