@@ -1,3 +1,4 @@
+from multiprocessing import connection
 import sqlite3
 from pathlib import Path
 
@@ -35,3 +36,30 @@ def create_db(connection):
     """)
     connection.commit()
     connection.close()
+
+def add_podcast(podcast):
+
+
+    connection = get_connection()
+
+    SQL_QUERY = """
+    INSERT INTO podcasts (title, description,website,rss_url)
+    VALUES (?,?,?,?)
+    """
+    values = (podcast[0].title,podcast[0].description,podcast[0].website,podcast[0].rss_url)
+    connection.execute(
+        SQL_QUERY,
+        values
+    )
+
+    connection.commit()
+    connection.close()
+
+def remove_podcast(podcast):
+    pass
+
+def update_podcast(podcast):
+    pass
+
+def get_podcasts():
+    pass

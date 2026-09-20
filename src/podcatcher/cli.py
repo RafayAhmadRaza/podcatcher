@@ -1,4 +1,4 @@
-from database import get_connection,create_db
+from database import get_connection,create_db,add_podcast,remove_podcast,get_podcasts,update_podcast
 from feeds import get_feed
 import argparse
 from models import Podcast
@@ -24,26 +24,28 @@ parser.add_argument('-r','--remove')
 
 
 args = parser.parse_args()
-TEST_PODCASTS = {
-    "kate_and_veronica": "https://kateandveronica.net/feed.xml",
-    "something_scary": "https://feeds.megaphone.fm/somethingscary",
+# TEST_PODCASTS = {
+#     "kate_and_veronica": "https://kateandveronica.net/feed.xml",
+#     "something_scary": "https://feeds.megaphone.fm/somethingscary",
 
-    "linux_unplugged": "https://linuxunplugged.com/rss",
-    "darknet_diaries": "https://podcast.darknetdiaries.com/",
-    "99_percent_invisible": "https://feeds.simplecast.com/BqbsxVfO",
-    "welcome_to_night_vale": "https://feeds.nightvalepresents.com/welcometonightvalepodcast",
-    "no_such_thing_as_a_fish": "https://audioboom.com/channels/2399216.rss",
-}
+#     "linux_unplugged": "https://linuxunplugged.com/rss",
+#     "darknet_diaries": "https://podcast.darknetdiaries.com/",
+#     "99_percent_invisible": "https://feeds.simplecast.com/BqbsxVfO",
+#     "welcome_to_night_vale": "https://feeds.nightvalepresents.com/welcometonightvalepodcast",
+#     "no_such_thing_as_a_fish": "https://audioboom.com/channels/2399216.rss",
+# }
 
 
 podcast = []
-for name,url in TEST_PODCASTS.items():
-    podcast.append(get_feed(url))
+# for name,url in TEST_PODCASTS.items():
+#     podcast.append(get_feed(url))
 
 if args.add:
     feed_link = args.add
     print(feed_link)
     podcast.append(get_feed(feed_link))
+
+    add_podcast(podcast)
 
 if args.remove:
     for pdc in podcast:
