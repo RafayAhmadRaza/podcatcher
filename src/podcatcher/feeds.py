@@ -27,6 +27,7 @@ def get_feed(url):
         guid=episode.guid,
         )
         episode_list.append(new_episode)
+       
     podcast = Podcast(title=title,description=desc,website=web_link,rss_url=url,episodes=episode_list)
     return podcast
 

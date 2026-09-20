@@ -1,6 +1,7 @@
 
 from models import Episode
 from models import Podcast
+from feeds import get_feed
 import sqlite3
 from pathlib import Path
 
@@ -79,9 +80,47 @@ def remove_podcast(podcast):
     connection.close()
 
 def update_podcast(podcast):
-    pass
+    connection = get_connection()
+    new_feed = get_feed(podcast.rss_url)
+    
+        
+    old_episode_guids = {episode.guid for episode in podcast.episodes}
+
+    SQL_QUERY = """
+    
+    INSERT INTO episodes 
+        (podcast_id,title,published,audio_url,guid)
+        VALUES(?,?,?,?,?)
+    """
+
+    new_episodes = False
+
+    
+
+    for episode in new_feed.episodes:
+        if episode.guid not in old_episode_guids:
+            connection.execute(
+                SQL_QUERY,
+                (podcast.id,
+                episode.title,
+                episode.published,
+                episode.audio_url,
+                episode.guid)
+            )
+            new_episodes = True
+
+
+
+    connection.commit()
+    connection.close()
+
+    if new_episodes:
+        print("New Episodes added.")
+    else:
+        print("No New Episodes Found.")
 
 def get_podcasts():
+
     SQL_QUERY = """
         SELECT
             podcasts.id,
@@ -99,32 +138,31 @@ def get_podcasts():
         JOIN episodes
             ON podcasts.id = episodes.podcast_id
     """
+
     connection = get_connection()
-
     result = connection.execute(SQL_QUERY)
+    podcasts = {}
 
-    podcasts = {} 
     for row in result:
+
         if row[0] not in podcasts:
             podcasts[row[0]] = Podcast(
                 id=row[0],
-                title = row[1],
+                title=row[1],
                 description=row[2],
                 website=row[3],
                 rss_url=row[4],
                 episodes=[]
             )
 
-            episode = Episode(
-                title=row[7],
-                published=row[8],
-                audio_url=row[9],
-                guid=row[10]
-            )
+        episode = Episode(
+            title=row[7],
+            published=row[8],
+            audio_url=row[9],
+            guid=row[10]
+        )
+
         podcasts[row[0]].episodes.append(episode)
 
-    
-
     connection.close()
-
     return list(podcasts.values())
