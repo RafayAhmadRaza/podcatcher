@@ -1,7 +1,12 @@
+from database import get_connection,create_db
 from feeds import get_feed
 import argparse
 from models import Podcast
 
+
+connection = get_connection()
+
+create_db(connection)
 
 parser = argparse.ArgumentParser(
     prog="Podcatcher",
