@@ -1,4 +1,3 @@
-from multiprocessing import connection
 import sqlite3
 from pathlib import Path
 
@@ -38,6 +37,7 @@ def create_db(connection):
     connection.close()
 
 def add_podcast(podcast):
+    
 
 
     connection = get_connection()
@@ -52,6 +52,14 @@ def add_podcast(podcast):
         values
     )
 
+    podcast_id = connection.execute("SELECT last_insert_rowid()").fetchone()[0]
+    episode_query = """INSERT INTO episodes(podcast_id,title,published,audio_url,guid)
+    VALUES (?,?,?,?,?)"""
+    for ep in podcast[0].episodes:
+        connection.execute(
+            episode_query,
+            (podcast_id,ep.title,ep.published,ep.audio_url,ep.guid)
+        )
     connection.commit()
     connection.close()
 
