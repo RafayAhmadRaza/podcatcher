@@ -11,4 +11,5 @@ class Podcast:
     title:str
     description:str
     website:str
+    rss_url:str
     episodes:[]
