@@ -74,5 +74,7 @@ if args.update:
 
 
 if args.list:
-    print(podcast)
+    podcasts = get_podcasts()
+
+    print(podcasts)
         

@@ -1,3 +1,6 @@
+
+from models import Episode
+from models import Podcast
 import sqlite3
 from pathlib import Path
 
@@ -70,4 +73,50 @@ def update_podcast(podcast):
     pass
 
 def get_podcasts():
-    pass
+    SQL_QUERY = """
+        SELECT
+            podcasts.id,
+            podcasts.title,
+            podcasts.description,
+            podcasts.website,
+            podcasts.rss_url,
+            episodes.id,
+            episodes.podcast_id,
+            episodes.title,
+            episodes.published,
+            episodes.audio_url,
+            episodes.guid
+        FROM podcasts
+        JOIN episodes
+            ON podcasts.id = episodes.podcast_id
+    """
+    connection = get_connection()
+
+    result = connection.execute(SQL_QUERY)
+
+    podcast = None
+    podcasts = {} 
+    for row in result:
+        if row[0] not in podcasts:
+            if podcast is None:
+                podcasts[row[0]] = Podcast(
+                title = row[1],
+                description=row[2],
+                website=row[3],
+                rss_url=row[4],
+                episodes=[]
+            )
+
+            episode = Episode(
+                title=row[7],
+                published=row[8],
+                audio_url=row[9],
+                guid=row[10]
+            )
+        podcasts[row[0]].episodes.append(episode)
+
+    
+
+    connection.close()
+
+    return list(podcasts.values())
