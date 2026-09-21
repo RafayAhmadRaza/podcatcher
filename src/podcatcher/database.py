@@ -34,6 +34,8 @@ def create_db(connection):
     published TEXT,
     audio_url TEXT,
     guid TEXT NOT NULL,
+    is_downloaded INTEGER NOT NULL DEFAULT 0,
+    local_path TEXT, 
     FOREIGN KEY (podcast_id) REFERENCES podcasts(id) ON DELETE CASCADE,
     UNIQUE(podcast_id,guid)
     )
@@ -119,6 +121,30 @@ def update_podcast(podcast):
     else:
         print("No New Episodes Found.")
 
+
+def set_download(podcast_id,episode,is_downloaded=False,local_path=None):
+    if is_downloaded == False:
+        return
+ 
+    SQL_QUERY = """
+    UPDATE episodes
+    SET is_downloaded = ?, local_path = ?
+    WHERE podcast_id = ? and guid=?
+    """ 
+
+    connection = get_connection()
+
+
+    connection.execute(SQL_QUERY,
+                (int(is_downloaded),
+                str(local_path),
+                podcast_id,
+                episode.guid)
+                )
+    connection.close()
+    
+
+
 def get_podcasts():
 
     SQL_QUERY = """
@@ -133,7 +159,9 @@ def get_podcasts():
             episodes.title,
             episodes.published,
             episodes.audio_url,
-            episodes.guid
+            episodes.guid,
+            episodes.is_downloaded,
+            episodes.local_path
         FROM podcasts
         JOIN episodes
             ON podcasts.id = episodes.podcast_id
@@ -159,7 +187,9 @@ def get_podcasts():
             title=row[7],
             published=row[8],
             audio_url=row[9],
-            guid=row[10]
+            guid=row[10],
+            is_downloaded = bool(row[11]),
+            local_path = row[12]
         )
 
         podcasts[row[0]].episodes.append(episode)

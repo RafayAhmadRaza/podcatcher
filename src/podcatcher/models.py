@@ -5,6 +5,8 @@ class Episode:
     published:str
     audio_url:str | None
     guid:str
+    is_downloaded: bool = False
+    local_path: str | None = None
 
 @dataclass
 class Podcast:
