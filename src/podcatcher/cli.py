@@ -97,12 +97,19 @@ if args.download:
         else:
             episode = podcast_to_download.episodes[choice]
 
-            is_downloaded,local_path = download_ep(podcast_to_download.title,episode.title,episode.audio_url)
-
-            if is_downloaded == False:
-                print("Download Failed")
+            if episode.watched:
+                choice = input("Episode already watched. Redownload? [y/N]: ")
+            
+            if choice.lower() != "y":
+                print("Download cancelled.")
             else:
-                set_download(podcast_to_download.id,episode,is_downloaded,local_path)
+                    
+                is_downloaded,local_path = download_ep(podcast_to_download.title,episode.title,episode.audio_url)
+
+                if is_downloaded == False:
+                    print("Download Failed")
+                else:
+                    set_download(podcast_to_download.id,episode,is_downloaded,local_path)
             
 if args.play:
     pdName = args.play
@@ -123,7 +130,7 @@ if args.play:
 
         else:
             for i, ep in enumerate(downloaded_episodes, start=1):
-                print(f"{i} {ep.title}")
+                print(f"[{'Watched' if ep.watched else 'Unwatched'}] [{'Downloaded' if ep.is_downloaded else 'Not Downloaded'}] {i} {ep.title}")
 
             choice = int(input("Enter Episode Choice: ")) - 1
 
