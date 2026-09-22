@@ -3,7 +3,8 @@ from feeds import get_feed
 import argparse
 from models import Podcast
 from downloader import download_ep
-
+import player
+import time
 connection = get_connection()
 
 create_db(connection)
@@ -19,10 +20,18 @@ parser.add_argument('-l','--list',action='store_true')
 parser.add_argument('-u','--update')
 parser.add_argument('-r','--remove')
 parser.add_argument('-d', '--download')
+parser.add_argument('-p', '--play')
 
 
 
 
+def search_in_podcast_list(title:str):
+    podcasts = get_podcasts()
+    for pdc in podcasts:
+        if pdc.title == title:
+            return pdc
+    return None
+        
 
 args = parser.parse_args()
 # TEST_PODCASTS = {
@@ -49,21 +58,17 @@ if args.add:
     add_podcast(podcast)
 
 if args.remove:
-    podcast = get_podcasts()
-    for pdc in podcast:
-        if pdc.title == args.remove:
-            podcast.remove(pdc)
-            remove_podcast(pdc)
-            break
+    podcast = search_in_podcast_list(args.remove)
+    if podcast == None:
+        print(f"Podcast Name {args.remove} does not exists")
+    else:
+        remove_podcast(podcast)
+
 
 if args.update:
-    podcast = get_podcasts()
     name = args.update
-    old_podcast = ''
-    for pdc in podcast:
-        if pdc.title == name: 
-            old_podcast = pdc
-            break
+    old_podcast = search_in_podcast_list(name) 
+    
     if old_podcast:
         update_podcast(old_podcast)
     
@@ -72,15 +77,9 @@ if args.update:
 
 
 if args.download:
-    podcasts = get_podcasts()
-
     name = args.download
-    podcast_to_download = None
-    for pdc in podcasts:
-        if pdc.title == name:
-            podcast_to_download = pdc
-            break
-        print(pdc.title)
+    podcast_to_download = search_in_podcast_list(name)
+    
     if podcast_to_download == None:
         print("Error Podcast Does Not Exist Or Has Not Being Added")
     else:
@@ -102,8 +101,54 @@ if args.download:
                 print("Download Failed")
             else:
                 set_download(podcast_to_download.id,episode,is_downloaded,local_path)
-                
             
+if args.play:
+    pdName = args.play
+    podcast = search_in_podcast_list(pdName)
+
+    if podcast is None:
+        print(f"Podcast '{pdName}' does not exist")
+
+    else:
+        downloaded_episodes = []
+
+        for ep in podcast.episodes:
+            if ep.is_downloaded:
+                downloaded_episodes.append(ep)
+
+        if not downloaded_episodes:
+            print("No downloaded episodes available")
+
+        else:
+            for i, ep in enumerate(downloaded_episodes, start=1):
+                print(f"{i} {ep.title}")
+
+            choice = int(input("Enter Episode Choice: ")) - 1
+
+            if choice < 0 or choice >= len(downloaded_episodes):
+                print("Episode is not available")
+
+            else:
+                ep = downloaded_episodes[choice]
+
+                media_player = player.create_player(podcast.id, ep)
+                player.start_play(media_player)
+
+                while player.is_playing or player.is_resumeable:
+                    command = input("Commnad: ")
+
+
+                    match command:
+                        case "p":
+                            if player.is_playing:
+                                player.pause_play(media_player)
+                            elif player.is_paused and player.is_resumeable:
+                                player.start_play(media_player)
+
+                        case "s":
+                            player.stop_play(media_player)
+                        
+                    time.sleep(1)
 
 
 if args.list:

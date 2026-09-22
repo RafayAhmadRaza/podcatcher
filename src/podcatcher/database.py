@@ -141,6 +141,7 @@ def set_download(podcast_id,episode,is_downloaded=False,local_path=None):
                 podcast_id,
                 episode.guid)
                 )
+    connection.commit()
     connection.close()
     
 
