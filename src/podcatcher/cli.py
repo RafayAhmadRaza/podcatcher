@@ -1,10 +1,12 @@
-from database import get_connection,create_db,add_podcast,remove_podcast,get_podcasts,update_podcast, set_download
-from feeds import get_feed
+from .database import *
+from .feeds import get_feed
+from .models import Podcast
+from .downloader import download_ep
+from . import player
 import argparse
-from models import Podcast
-from downloader import download_ep
-import player
 import time
+import vlc
+import os
 connection = get_connection()
 
 create_db(connection)
@@ -133,8 +135,12 @@ if args.play:
 
                 media_player = player.create_player(podcast.id, ep)
                 player.start_play(media_player)
+                event_manager = media_player.event_manager()
+                event_manager.event_attach(vlc.EventType.MediaPlayerEndReached,
+                player.done_playback)
 
                 while player.is_playing or player.is_resumeable:
+                    
                     command = input("Commnad: ")
 
 
@@ -147,9 +153,15 @@ if args.play:
 
                         case "s":
                             player.stop_play(media_player)
-                        
+                    
                     time.sleep(1)
 
+                if player.is_done:
+                    os.unlink(ep.local_path)           
+                    remove_episode(podcast.id,ep)
+
+
+                    
 
 if args.list:
     podcasts = get_podcasts()

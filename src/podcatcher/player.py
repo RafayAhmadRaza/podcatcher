@@ -5,6 +5,7 @@ import time
 is_playing = False
 is_resumeable = False
 is_paused = False
+is_done = False
 
 def create_player(podcast_id,episode):
 
@@ -33,11 +34,11 @@ def stop_play(player:vlc.MediaPlayer):
     is_playing, is_resumeable, is_paused = False, False, False
 
 def done_playback(event=None):
-    global is_playing, is_resumeable, is_paused
+    global is_playing, is_resumeable, is_paused,is_done
     is_playing = False
     is_resumeable = False
     is_paused = False
-    
+    is_done = True    
 
 if __name__ == "__main__":
 

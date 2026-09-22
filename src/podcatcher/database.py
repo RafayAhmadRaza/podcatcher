@@ -1,11 +1,29 @@
 
-from models import Episode
-from models import Podcast
-from feeds import get_feed
+from .models import Episode, Podcast
+from .feeds import get_feed
 import sqlite3
 from pathlib import Path
 
 DB_PATH = Path("podcatcher.db")
+
+def remove_episode(podcast_id, episode):
+    connection = get_connection()
+
+    SQL_QUERY = """
+        UPDATE episodes
+        SET is_downloaded = 0,
+            local_path = NULL,
+            watched = 1
+        WHERE podcast_id = ? AND guid = ?
+    """
+
+    connection.execute(
+        SQL_QUERY,
+        (podcast_id, episode.guid)
+    )
+
+    connection.commit()
+    connection.close()
 
 def get_connection():
     connection = sqlite3.connect(DB_PATH)
@@ -36,6 +54,7 @@ def create_db(connection):
     guid TEXT NOT NULL,
     is_downloaded INTEGER NOT NULL DEFAULT 0,
     local_path TEXT, 
+    watched INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (podcast_id) REFERENCES podcasts(id) ON DELETE CASCADE,
     UNIQUE(podcast_id,guid)
     )
@@ -162,7 +181,8 @@ def get_podcasts():
             episodes.audio_url,
             episodes.guid,
             episodes.is_downloaded,
-            episodes.local_path
+            episodes.local_path,
+            episodes.watched
         FROM podcasts
         JOIN episodes
             ON podcasts.id = episodes.podcast_id
@@ -190,7 +210,8 @@ def get_podcasts():
             audio_url=row[9],
             guid=row[10],
             is_downloaded = bool(row[11]),
-            local_path = row[12]
+            local_path = row[12],
+            watched = bool(row[13])
         )
 
         podcasts[row[0]].episodes.append(episode)
