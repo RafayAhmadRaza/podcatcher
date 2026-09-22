@@ -64,7 +64,14 @@ if args.remove:
     if podcast == None:
         print(f"Podcast Name {args.remove} does not exists")
     else:
+        episodes = podcast.episodes
+
+        for ep in episodes:
+            if ep.local_path:
+                os.unlink(ep.local_path)
+
         remove_podcast(podcast)
+
 
 
 if args.update:
@@ -81,36 +88,55 @@ if args.update:
 if args.download:
     name = args.download
     podcast_to_download = search_in_podcast_list(name)
-    
+
     if podcast_to_download == None:
-        print("Error Podcast Does Not Exist Or Has Not Being Added")
+        print("Error: Podcast Does Not Exist Or Has Not Been Added")
     else:
         episode_count = len(podcast_to_download.episodes)
-        
-        for i,ep in enumerate(podcast_to_download.episodes,start=1):
-            print(str(i) + " "+ ep.title+" "+ ep.published)
 
-        choice = int(input("Select Episode to download: "))-1
+        for i, ep in enumerate(podcast_to_download.episodes, start=1):
+            print(str(i) + " " + ep.title + " " + ep.published)
 
-        if choice>=episode_count:
-            print("Episode Does Not Exist, Please Fetch the latest episodes")
+        choice = input("Select Episode to download: ")
+
+        while not choice.isdigit():
+            choice = input("Enter Number To Select The Episode: ")
+
+        choice = int(choice) - 1
+
+        if choice < 0 or choice >= episode_count:
+            print("Episode Does Not Exist, Please Fetch The Latest Episodes")
         else:
             episode = podcast_to_download.episodes[choice]
 
+            redownload = True
+
             if episode.watched:
-                choice = input("Episode already watched. Redownload? [y/N]: ")
-            
-            if choice.lower() != "y":
+                redownload = input(
+                    "Episode already watched. Redownload? [y/N]: "
+                ).lower() == "y"
+
+            if not redownload:
                 print("Download cancelled.")
             else:
-                    
-                is_downloaded,local_path = download_ep(podcast_to_download.title,episode.title,episode.audio_url)
-
-                if is_downloaded == False:
-                    print("Download Failed")
+                if episode.audio_url is None:
+                    print("Episode has no downloadable audio.")
                 else:
-                    set_download(podcast_to_download.id,episode,is_downloaded,local_path)
-            
+                    is_downloaded, local_path = download_ep(
+                        podcast_to_download.title,
+                        episode.title,
+                        episode.audio_url
+                    )
+
+                    if is_downloaded == False:
+                        print("Download Failed")
+                    else:
+                        set_download(
+                            podcast_to_download.id,
+                            episode,
+                            is_downloaded,
+                            local_path
+                        )            
 if args.play:
     pdName = args.play
     podcast = search_in_podcast_list(pdName)
@@ -132,8 +158,12 @@ if args.play:
             for i, ep in enumerate(downloaded_episodes, start=1):
                 print(f"[{'Watched' if ep.watched else 'Unwatched'}] [{'Downloaded' if ep.is_downloaded else 'Not Downloaded'}] {i} {ep.title}")
 
-            choice = int(input("Enter Episode Choice: ")) - 1
+            choice = input("Enter Episode Choice: ")
+            
+            while not choice.isdigit():
+                choice = input("Enter Number To Select The Episode")
 
+            choice = int(choice) -1
             if choice < 0 or choice >= len(downloaded_episodes):
                 print("Episode is not available")
 
