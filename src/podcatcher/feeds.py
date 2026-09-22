@@ -1,6 +1,6 @@
 
 import feedparser
-from models import Episode, Podcast
+from .models import Episode, Podcast
 
 
 def get_feed(url):
