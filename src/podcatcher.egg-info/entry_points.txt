@@ -1,0 +1,2 @@
+[console_scripts]
+podcatcher = podcatcher.cli:main

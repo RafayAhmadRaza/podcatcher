@@ -1,7 +1,7 @@
 import httpx
 from pathlib import Path
 import os
-path = Path("Podcaster/downloader")
+path = Path("podcatcher/downloader")
 
 
 def download_ep(title:str,episode_name:str,url:str) -> None:

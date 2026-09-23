@@ -7,9 +7,9 @@ is_resumeable = False
 is_paused = False
 is_done = False
 
-def create_player(podcast_id,episode):
-
-    player = vlc.MediaPlayer(episode.local_path)
+def create_player(podcast_id, episode):
+    file_path = Path(episode.local_path).resolve()
+    player = vlc.MediaPlayer(file_path.as_uri())
     return player
 
 def start_play(player:vlc.MediaPlayer):
@@ -39,6 +39,8 @@ def done_playback(event=None):
     is_resumeable = False
     is_paused = False
     is_done = True    
+
+
 
 if __name__ == "__main__":
 

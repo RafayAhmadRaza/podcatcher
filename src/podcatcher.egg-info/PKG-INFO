@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: podcatcher
+Version: 0.1.0
+Summary: A simple command-line podcast catcher
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: feedparser
+Requires-Dist: httpx
+Requires-Dist: python-vlc
+Dynamic: license-file
