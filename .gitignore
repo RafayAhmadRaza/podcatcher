@@ -1,3 +1,8 @@
-*.mp3
+__pycache__/
+*.pyc
 *.db
-podcatcher.db
+*.mp3
+*.part
+Podcaster/
+.pytest_cache/
+.ruff_cache/
