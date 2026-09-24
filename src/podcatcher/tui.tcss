@@ -1,0 +1,12 @@
+#podcasts{
+    width:30%;
+    border:solid;
+    padding: 1;
+}
+
+#episodes{
+    width:70%;
+    border:solid;
+    padding: 1;
+
+}
