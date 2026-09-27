@@ -3,7 +3,7 @@ from podcatcher.player import create_player
 from textual.app import App, ComposeResult
 from textual import events, timer
 from textual.containers import Container, Vertical, Horizontal
-from textual.widgets import Static, Header, Footer,ListItem,ListView
+from textual.widgets import Static, Header, Footer,ListItem,ListView,ProgressBar
 from .database import get_podcasts
 from .player import *
 podcasts = get_podcasts()
@@ -26,27 +26,27 @@ class PodcatcherApp(App):
             ep_list.focus()
 
     def update_player_time(self):
-        self.query_one("#message", Static)
-        
-        
-        timeStarted,total_lenght = get_timer(self.current_player)
+        time_started, total_length = get_timer(self.current_player)
 
-        timeStarted_secs = timeStarted//1000
-        
-        total_lenght_secs = total_lenght//1000
+        time_started_secs = time_started // 1000
+        total_length_secs = total_length // 1000
 
-        TS_mins, TS_secs = divmod(timeStarted_secs,60)
-        TL_mins, TL_secs = divmod(total_lenght_secs,60)
+        if total_length_secs <= 0:
+            return
 
+        ts_mins, ts_secs = divmod(time_started_secs, 60)
+        tl_mins, tl_secs = divmod(total_length_secs, 60)
 
-        self.set_interval(1,self.update_player_time)
-    
-    
-        message = self.query_one("#message",Static)
-    
+        message = self.query_one("#message", Static)
+        message.update(
+            f"{ts_mins:02}:{ts_secs:02} / {tl_mins:02}:{tl_secs:02}"
+        )
 
-        message.update(f"{TS_mins:02}:{TS_secs:02} / {TL_mins:02}:{TL_secs:02}")
-        
+        progress = self.query_one("#progress", ProgressBar)
+        progress.update(
+            progress=(time_started_secs / total_length_secs) * 100
+        )
+            
             
             
             
@@ -108,6 +108,10 @@ class PodcatcherApp(App):
 
                     message.update(f"{TS_mins:02}:{TS_secs:02} / {TL_mins:02}:{TL_secs:02}")
                     
+                    progress = self.query_one("#progress", ProgressBar)
+                    progress.update(progress=0)
+            
+            
             
             
             
@@ -125,7 +129,7 @@ class PodcatcherApp(App):
                     
                     timeStarted,total_lenght = get_timer(self.current_player)
 
-                    timeStarted_secs,timeStarted_sec = timeStarted//1000
+                    timeStarted_secs = timeStarted//1000
                     
                     total_lenght_secs = total_lenght//1000
 
@@ -139,8 +143,11 @@ class PodcatcherApp(App):
                     message = self.query_one("#message",Static)
              
 
-                    message.update(f"{TS_mins:02}:;{TS_secs:02} / {TL_mins:02}:{TL_secs:02}")
+                    message.update(f"{TS_mins:02}:{TS_secs:02} / {TL_mins:02}:{TL_secs:02}")
                     
+                    progress = self.query_one("#progress", ProgressBar)
+                    progress.update(progress=0)
+            
             
             
             
@@ -161,6 +168,7 @@ class PodcatcherApp(App):
                     pdc = podcasts[SELECTED_PDC]
                     for ep in pdc.episodes:
                             yield ListItem(Static(ep.title))
+        yield ProgressBar(total=100,id='progress')
 
         yield Static("Waiting for selection...", id="message")
 
