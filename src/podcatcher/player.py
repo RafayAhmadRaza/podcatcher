@@ -13,8 +13,7 @@ def create_player(podcast_id, episode):
     return player
 
 def create_network_player(podcast_id, episode):
-    file_path = Path(episode.audio_url).resolve()
-    player = vlc.MediaPlayer(file_path.as_uri())
+    player = vlc.MediaPlayer(episode.audio_url)
     return player
 
 
@@ -25,6 +24,9 @@ def start_play(player:vlc.MediaPlayer):
     is_paused = False
 
     player.play()
+
+def get_timer(player:vlc.MediaPlayer):
+    return player.get_time(),player.get_length()
 
 
 def pause_play(player:vlc.MediaPlayer):

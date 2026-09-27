@@ -9,6 +9,7 @@ src/podcatcher/downloader.py
 src/podcatcher/feeds.py
 src/podcatcher/models.py
 src/podcatcher/player.py
+src/podcatcher/tui.py
 src/podcatcher.egg-info/PKG-INFO
 src/podcatcher.egg-info/SOURCES.txt
 src/podcatcher.egg-info/dependency_links.txt

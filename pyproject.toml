@@ -13,6 +13,7 @@ dependencies = [
     "feedparser",
     "httpx",
     "python-vlc",
+    "textual",
 ]
 
 [project.scripts]
