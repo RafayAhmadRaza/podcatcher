@@ -6,3 +6,5 @@ __pycache__/
 Podcaster/
 .pytest_cache/
 .ruff_cache/
+podcatcher.eg-info/
+src/podcatcher.egg-info/
