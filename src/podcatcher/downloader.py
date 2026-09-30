@@ -1,69 +1,127 @@
-import httpx
 from pathlib import Path
-import os
-path = Path("podcatcher/downloader")
+import re
+
+import httpx
 
 
-def download_ep(title:str,episode_name:str,url:str) -> None:
-    file_path = path / title /f"{episode_name}.mp3"
-    # file_path = Path(f"/root/{episode_name}.mp3")
+def sanitize_filename(name: str, max_length: int = 180) -> str:
+    """Make a podcast title safe to use as a filename."""
 
-    file_path_temp = Path(str(file_path) + ".part")
-    resume_from = 0
-    if file_path_temp.exists():
-        print("Resuming File Download")
-        resume_from = file_path_temp.stat().st_size
-    
+    # Remove characters that are invalid/problematic in filenames.
+    name = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", name)
+
+    # Collapse repeated whitespace.
+    name = re.sub(r"\s+", " ", name).strip()
+
+    # Avoid filenames ending with a period or space.
+    name = name.rstrip(". ")
+
+    # Prevent empty filenames.
+    if not name:
+        name = "episode"
+
+    # Keep filenames at a reasonable length.
+    name = name[:max_length].rstrip(". ")
+
+    return name
+
+
+def download_ep(
+    podcast_title,
+    episode_title,
+    audio_url,
+    progress_callback=None,
+):
+    download_dir = (
+        Path.home()
+        / "Podcasts"
+        / sanitize_filename(podcast_title)
+    )
+
+    download_dir.mkdir(parents=True, exist_ok=True)
+
+    filename = f"{sanitize_filename(episode_title)}.mp3"
+    file_path = download_dir / filename
+    partial_path = Path(str(file_path) + ".part")
+
+    downloaded = 0
+
+    if partial_path.exists():
+        downloaded = partial_path.stat().st_size
+
     headers = {}
 
-    if resume_from >0:
-        headers["Range"] = f"bytes={resume_from}-"
-
-    
-    
+    if downloaded > 0:
+        headers["Range"] = f"bytes={downloaded}-"
 
     try:
-        with httpx.stream("GET",url,headers=headers,follow_redirects=True) as response:
-                response.raise_for_status()
-            
-                write_instrction = 'wb'
-                if file_path.exists():
-                    print("Already downloaded")
-                    return True, file_path
-                path.mkdir(parents=True, exist_ok=True)
-                file_path.parent.mkdir(parents=True,exist_ok=True)
-            
+        with httpx.stream(
+            "GET",
+            audio_url,
+            headers=headers,
+            follow_redirects=True,
+            timeout=None,
+        ) as response:
 
-                content_length = int(response.headers.get("content-length",0))
-                if response.status_code == 200:
-                    write_instrction = 'wb'
-                    total = content_length                
-                if response.status_code == 206:
-                    write_instrction = 'ab'
-                    total = resume_from + content_length
+            response.raise_for_status()
 
-                with open(file_path_temp,write_instrction) as f:
+            # Server accepted our Range request.
+            if response.status_code == 206:
+                mode = "ab"
 
-                        downloaded = resume_from
-                        for chunk in response.iter_bytes():
-                            f.write(chunk)
-                            downloaded +=len(chunk)
+                total = downloaded + int(
+                    response.headers.get(
+                        "Content-Length",
+                        0,
+                    )
+                )
 
+            # Server ignored Range and is sending
+            # the entire file again.
+            elif response.status_code == 200:
+                mode = "wb"
+                downloaded = 0
 
-                            print(downloaded,total)
+                total = int(
+                    response.headers.get(
+                        "Content-Length",
+                        0,
+                    )
+                )
 
-                        os.rename(file_path_temp,file_path)
+            else:
+                return False, None
 
-                        return True,file_path
-    except OSError as exc:
-        print(f"OS Error for {exc}")
-        return False,None
+            current = downloaded
 
+            with open(partial_path, mode) as file:
+                for chunk in response.iter_bytes(
+                    chunk_size=1024 * 1024
+                ):
+                    if not chunk:
+                        continue
 
-                    
-    except httpx.HTTPError as exc:
-            print(f"HTTP Exception for {exc}")
-            return False,None
-        
-if __name__ == "__main__":
-    download_ep("LINUX Unplugged","Episode Test 1: Too Much Choice","https://dts.podtrac.com/redirect.mp3/mgln.ai/e/211/rss.art19.com/episodes/761a2733-c9c2-4fec-8c15-627cd3472417.mp3")
+                    file.write(chunk)
+                    current += len(chunk)
+
+                    if progress_callback:
+                        progress_callback(
+                            current,
+                            total,
+                        )
+
+        partial_path.replace(file_path)
+
+        if progress_callback:
+            progress_callback(
+                total,
+                total,
+            )
+
+        return True, str(file_path)
+
+    except (
+        OSError,
+        httpx.HTTPError,
+    ):
+        return False, None

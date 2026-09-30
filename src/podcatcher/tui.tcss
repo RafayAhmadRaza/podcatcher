@@ -1,12 +1,96 @@
-#podcasts{
-    width:30%;
-    border:solid;
-    padding: 1;
+Screen {
+    layout: vertical;
 }
 
-#episodes{
-    width:70%;
-    border:solid;
-    padding: 1;
+#main-content {
+    height: 1fr;
+    width: 100%;
+}
 
+#podcasts {
+    width: 30%;
+    height: 100%;
+    border: solid $primary;
+}
+
+#episodes {
+    width: 45%;
+    height: 100%;
+    border: solid $primary;
+}
+
+#queue-panel {
+    width: 25%;
+    height: 100%;
+    border: solid $primary;
+}
+
+.section-title {
+    width: 100%;
+    height: 1;
+    content-align: center middle;
+    text-align: center;
+    text-style: bold;
+}
+
+ListView {
+    width: 100%;
+    height: 1fr;
+}
+
+#player-area {
+    width: 100%;
+    height: auto;
+    min-height: 7;
+}
+
+#playing-title {
+    width: 100%;
+    height: 1;
+    content-align: center middle;
+    text-align: center;
+    text-style: bold;
+}
+
+#progress {
+    width: 100%;
+    height: 1;
+    content-align: center middle;
+    text-align: center;
+}
+
+#playback-speed {
+    width: 100%;
+    height: 1;
+    content-align: center middle;
+    text-align: center;
+    text-style: bold;
+    color: $primary;
+}
+
+#message {
+    width: 100%;
+    height: 1;
+    content-align: center middle;
+    text-align: center;
+}
+
+#task-progress {
+    width: 100%;
+    height: 1;
+    content-align: center middle;
+    text-align: center;
+}
+
+#command-input {
+    display: none;
+    width: 100%;
+    height: 3;
+}
+
+#key-help {
+    width: 100%;
+    height: 1;
+    content-align: center middle;
+    text-align: center;
 }
